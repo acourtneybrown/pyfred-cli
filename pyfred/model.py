@@ -129,7 +129,7 @@ class Data:
 
     subtitle: Optional[str] = None
     """Second line of the item"""
-    arg: Optional[str] = None
+    arg: Optional[Union[str, list[str]]] = None
     """The value to be passed to the next input"""
     icon: Optional[Icon] = None
     """An icon to display next to the item. Defaults to the workflow icon if not set"""
@@ -168,7 +168,7 @@ class OutputItem:
     """Second line of the item"""
     uid: Optional[str] = None
     """A UID to allow Alfred to identify a response and determine frequently used ones"""
-    arg: Optional[str] = None
+    arg: Optional[Union[str, list[str]]] = None
     """The value to be passed to the next input"""
     icon: Optional[Icon] = None
     """An icon to display next to the item. Defaults to the workflow icon if not set"""
@@ -220,11 +220,11 @@ class OutputItem:
 class ScriptFilterOutput:
     """The class to be returned by the script filter entrypoint"""
 
-    rerun: Optional[int] = None
+    rerun: Optional[float] = None
     """Time in seconds in which to run the script filter again. Must be between 0.1 and 5 seconds"""
     items: Optional[list[OutputItem]] = None
     """The items to be displayed for selection in Alfred"""
-    variables: Optional[dict[str, str]] = None
+    variables: Optional[dict[str, Union[str, bool, float, int]]] = None
     """
     The variables to pass to the next input
 
