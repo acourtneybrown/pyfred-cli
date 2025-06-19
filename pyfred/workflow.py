@@ -78,6 +78,6 @@ def external_script(fn: Callable[[Path, list[str], Optional[Environment]], Union
             logging.debug("Unexpected instance of type %s: %s", type(output), repr(output))
             exit(1)
 
-        print(*output if isinstance(output, list) else output)
+        print(*output if isinstance(output, list) else output, end="")
 
     return decorator

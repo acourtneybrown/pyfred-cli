@@ -108,4 +108,4 @@ def test_external_script_decorator(capsys, monkeypatch):
 
     output = capsys.readouterr().out
 
-    assert output == "abc def\n"
+    assert output == "abc def"
