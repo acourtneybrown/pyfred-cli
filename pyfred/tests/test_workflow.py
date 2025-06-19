@@ -1,6 +1,8 @@
 import json
 from pathlib import PosixPath
 
+import pytest
+
 from pyfred.model import Environment, OutputItem, ScriptFilterOutput
 from pyfred.workflow import external_script, script_filter
 
@@ -58,7 +60,14 @@ def test_decorator(capsys, monkeypatch):
     assert output == {"items": [{"title": "Hello Alfred!", "type": "default"}]}
 
 
-def test_external_script_decorator(capsys, monkeypatch):
+external_script_testdata = [
+    (["abc", "def"], "abc def"),
+    ("abc", "abc"),
+]
+
+
+@pytest.mark.parametrize("ret,expected", external_script_testdata)
+def test_external_script_decorator(capsys, monkeypatch, ret, expected):
     monkeypatch.setenv("alfred_preferences", "/Users/Crayons/Dropbox/Alfred/Alfred.alfredpreferences")
     monkeypatch.setenv("alfred_version", "/Users/Crayons/Dropbox/Alfred/Alfred.alfredpreferences")
     monkeypatch.setenv("alfred_preferences", "/Users/Crayons/Dropbox/Alfred/Alfred.alfredpreferences")
@@ -102,10 +111,10 @@ def test_external_script_decorator(capsys, monkeypatch):
                 "/Users/Crayons/Library/Application Support/Alfred/Workflow Data/com.alfredapp.googlesuggest"
             ),
         )
-        return ["abc", "def"]
+        return ret
 
     under_test()
 
     output = capsys.readouterr().out
 
-    assert output == "abc def"
+    assert output == expected
