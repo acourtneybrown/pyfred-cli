@@ -168,7 +168,7 @@ class OutputItem:
     """Second line of the item"""
     uid: Optional[str] = None
     """A UID to allow Alfred to identify a response and determine frequently used ones"""
-    arg: Optional[str] = None
+    arg: Optional[Union[str, list[str]]] = None
     """The value to be passed to the next input"""
     icon: Optional[Icon] = None
     """An icon to display next to the item. Defaults to the workflow icon if not set"""
