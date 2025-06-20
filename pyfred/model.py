@@ -190,7 +190,7 @@ class OutputItem:
 
     Accepts URLs and file paths.
     """
-    actions: Optional[Union[str, list[str], Action]] = None
+    action: Optional[Union[str, list[str], Action]] = None
     """
     Items to be passed to Universal Actions if this item is selected. Overrides `args` if set.
 
