@@ -184,7 +184,7 @@ class OutputItem:
     """
     Defines the text the user will get when copying the selected result row with ⌘C or displaying large type with ⌘L
     """
-    quicklook_url: Optional[str] = None
+    quicklookurl: Optional[str] = None
     """
     A Quick Look URL which will be visible if the user uses the Quick Look feature within Alfred.
 
