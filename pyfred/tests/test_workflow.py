@@ -3,7 +3,7 @@ from pathlib import PosixPath
 
 import pytest
 
-from pyfred.model import Environment, OutputItem, ScriptFilterOutput
+from pyfred.model import CacheConfig, Environment, OutputItem, ScriptFilterOutput
 from pyfred.workflow import external_script, script_filter
 
 
@@ -51,13 +51,17 @@ def test_decorator(capsys, monkeypatch):
                 "/Users/Crayons/Library/Application Support/Alfred/Workflow Data/com.alfredapp.googlesuggest"
             ),
         )
-        return ScriptFilterOutput(items=[OutputItem(title="Hello Alfred!")])
+        return ScriptFilterOutput(items=[OutputItem(title="Hello Alfred!")], rerun=2.0, cache=CacheConfig(seconds=10))
 
     under_test()
 
     output = json.loads(capsys.readouterr().out)
 
-    assert output == {"items": [{"title": "Hello Alfred!", "type": "default"}]}
+    assert output == {
+        "items": [{"title": "Hello Alfred!", "type": "default"}],
+        "rerun": 2.0,
+        "cache": {"seconds": 10},
+    }
 
 
 external_script_testdata = [
