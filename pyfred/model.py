@@ -249,6 +249,8 @@ class ScriptFilterOutput:
     """
     cache: Optional[CacheConfig] = None
     """Allow Alfred to cache results"""
+    skipknowledge: Optional[bool] = None
+    """Force Alfred present the items in the exact sequence you define"""
 
     def __post_init__(self):
         if self.rerun is not None and not 0.1 <= self.rerun <= 5:
