@@ -81,7 +81,7 @@ def test_full_model_serialises_to_json():
                     )
                 },
                 text=Text(large_type="Large type this", copy="Copy that"),
-                quicklook_url="https://example.com",
+                quicklookurl="https://example.com",
                 type=Type.Default,
             ),
             OutputItem(title="A minimal item"),
