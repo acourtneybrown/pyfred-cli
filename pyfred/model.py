@@ -184,13 +184,13 @@ class OutputItem:
     """
     Defines the text the user will get when copying the selected result row with ⌘C or displaying large type with ⌘L
     """
-    quicklook_url: Optional[str] = None
+    quicklookurl: Optional[str] = None
     """
     A Quick Look URL which will be visible if the user uses the Quick Look feature within Alfred.
 
     Accepts URLs and file paths.
     """
-    actions: Optional[Union[str, list[str], Action]] = None
+    action: Optional[Union[str, list[str], Action]] = None
     """
     Items to be passed to Universal Actions if this item is selected. Overrides `args` if set.
 
@@ -217,6 +217,23 @@ class OutputItem:
 
 
 @dataclass(frozen=True)
+class CacheConfig:
+    """Scripts which take a while to return can cache results so users see data sooner on subsequent runs."""
+
+    seconds: Optional[int] = None
+    """Time to live for cached data is defined as a number of seconds between 5 and 86400 (i.e. 24 hours)."""
+    loosereload: Optional[bool] = None
+    """
+    The optional loosereload key asks the Script Filter to try to show any cached data first. If it's determined to be
+    stale, the script runs in the background and replaces results with the new data when it becomes available.
+    """
+
+    def __post_init__(self):
+        if self.seconds is not None and not 5 <= self.seconds <= 84600:
+            raise ValueError("seconds must be between 5 and 86400")
+
+
+@dataclass(frozen=True)
 class ScriptFilterOutput:
     """The class to be returned by the script filter entrypoint"""
 
@@ -230,6 +247,10 @@ class ScriptFilterOutput:
 
     The variables are also available to reruns of this filter. This is useful to keep state between runs.
     """
+    cache: Optional[CacheConfig] = None
+    """Allow Alfred to cache results"""
+    skipknowledge: Optional[bool] = None
+    """Force Alfred present the items in the exact sequence you define"""
 
     def __post_init__(self):
         if self.rerun is not None and not 0.1 <= self.rerun <= 5:
