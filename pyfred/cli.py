@@ -13,7 +13,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 
 def _must_be_run_from_workflow_project_root(
-    fn: Callable[[argparse.Namespace], None]
+    fn: Callable[[argparse.Namespace], None],
 ) -> Callable[[argparse.Namespace], None]:
     """Validates that the command is run from a directory that contains a workflow"""
 
@@ -362,7 +362,7 @@ def _vendor(root_path: Path, upgrade: bool) -> bool:
 
 
 @_must_be_run_from_workflow_project_root
-def package(_args: argparse.Namespace):
+def package(args: argparse.Namespace):
     """
     Entry point for the `package` command. Creates a package for distribution.
 
@@ -385,7 +385,7 @@ def package(_args: argparse.Namespace):
     output = root_dir / "dist"
     output.mkdir(exist_ok=True)
 
-    _zip_dir(root_dir / "workflow", output / "workflow.alfredworkflow")
+    _zip_dir(root_dir / "workflow", output / f"{args.name}.alfredworkflow")
 
 
 def _cli():
@@ -455,6 +455,7 @@ def _cli():
     link_parser.set_defaults(func=link)
 
     package_parser = subparsers.add_parser("package", help="Package the workflow for distribution")
+    package_parser.add_argument("--name", type=str, required=True, help="The name of the workflow file")
     package_parser.set_defaults(func=package)
 
     args = parser.parse_args()
