@@ -19,7 +19,7 @@ def _must_be_run_from_workflow_project_root(
 
     def decorator(args: argparse.Namespace):
         wf_dir = Path.cwd() / "workflow"
-        info_plist_path = wf_dir / "Info.plist"
+        info_plist_path = wf_dir / "info.plist"
 
         if not info_plist_path.exists():
             logging.critical("Cannot find workflow. You need to run this command from the root of the project")
@@ -74,7 +74,7 @@ def _make_plist(
     name: str, keyword: str, bundle_id: str, author: Optional[str], website: Optional[str], description: Optional[str]
 ) -> dict:
     """
-    Create a dictionary representation of the Info.plist file describing the workflow
+    Create a dictionary representation of the info.plist file describing the workflow
 
     :param name:
         The name of the workflow
@@ -88,7 +88,7 @@ def _make_plist(
         The website of the workflow
     :param description:
         The description of the workflow. Will be shown to the user when importing
-    :return: a dictionary representation of the Info.plist file
+    :return: a dictionary representation of the info.plist file
     """
     script_uuid = str(uuid4())
     clipboard_uuid = str(uuid4())
@@ -221,8 +221,8 @@ def new(args: argparse.Namespace):
         if subprocess.call(["git", "init", args.name]) != 0:
             logging.warning("Failed to create git repository. Ignoring.")
 
-    logging.debug("Creating Info.plist")
-    with wf_dir.joinpath("Info.plist").open(mode="wb") as f:
+    logging.debug("Creating info.plist")
+    with wf_dir.joinpath("info.plist").open(mode="wb") as f:
         plistlib.dump(
             _make_plist(
                 name=name,
