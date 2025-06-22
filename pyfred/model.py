@@ -269,6 +269,19 @@ class Environment:
     """Whether Alfred is running in debug mode"""
     preferences_file: Path
     """The path to Alfred's preferences file"""
+    preferences_localhash: str
+    """
+    Local (Mac-specific) preferences are stored within Alfred.alfredpreferences
+    under …/preferences/local/[alfred_preferences_localhash]
+    """
+    theme: str
+    """Current theme used."""
+    theme_background: str
+    """If you're creating icons on the fly, this allows you to find out the colour of the theme background."""
+    theme_selection_background: str
+    """The colour of the selected result."""
+    theme_subtext: str
+    """The subtext mode the user has selected in the Appearance preferences."""
     version: str
     """The Alfred version (e.g., `v5.0.0`)"""
     version_build: str
@@ -277,7 +290,7 @@ class Environment:
     """The name of the workflow being executed"""
     workflow_version: Optional[str]
     """The version of the workflow"""
-    workflow_bundle_id: Optional[str]
+    workflow_bundleid: Optional[str]
     """The bundle ID of the workflow, if set"""
     workflow_uid: str
     """The UID of the workflow"""
@@ -285,6 +298,10 @@ class Environment:
     """The path to the workflow's cache directory"""
     workflow_data: Optional[Path]
     """The path to the workflow's data directory"""
+    workflow_description: str
+    """Description of the running workflow."""
+    workflow_keyword: str
+    """The keyword text used to start an action. Exclusive to the Script Filter Input."""
 
     @classmethod
     def from_env(cls) -> Optional["Environment"]:
@@ -305,14 +322,21 @@ class Environment:
         return Environment(
             debug=(os.environ.get("alfred_debug") == "1"),
             preferences_file=Path(cast(str, os.environ.get("alfred_preferences"))),
+            preferences_localhash=cast(str, os.environ.get("alfred_preferences_localhash")),
+            theme=cast(str, os.environ.get("alfred_theme")),
+            theme_background=cast(str, os.environ.get("alfred_theme_background")),
+            theme_selection_background=cast(str, os.environ.get("alfred_theme_selection_background")),
+            theme_subtext=cast(str, os.environ.get("alfred_theme_subtext")),
             version=cast(str, os.environ.get("alfred_version")),
             version_build=cast(str, os.environ.get("alfred_version_build")),
             workflow_name=cast(str, os.environ.get("alfred_workflow_name")),
             workflow_version=os.environ.get("alfred_workflow_version"),
-            workflow_bundle_id=os.environ.get("alfred_workflow_bundle_id"),
+            workflow_bundleid=os.environ.get("alfred_workflow_bundleid"),
             workflow_uid=os.environ.get("alfred_workflow_uid") or "",
             workflow_cache=Path(cache_dir).expanduser() if cache_dir else None,
             workflow_data=Path(data_dir).expanduser() if data_dir else None,
+            workflow_description=cast(str, os.environ.get("alfred_workflow_description")),
+            workflow_keyword=cast(str, os.environ.get("alfred_workflow_keyword")),
         )
 
     @property

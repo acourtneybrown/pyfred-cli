@@ -42,7 +42,7 @@ def test_decorator(capsys, monkeypatch):
             version_build="2058",
             workflow_name="Google Suggest",
             workflow_version="1.7",
-            workflow_bundle_id=None,
+            workflow_bundleid=None,
             workflow_uid="user.workflow.B0AC54EC-601C-479A-9428-01F9FD732959",
             workflow_cache=PosixPath(
                 "/Users/Crayons/Library/Caches/com.runningwithcrayons.Alfred/Workflow Data/com.alfredapp.googlesuggest"
@@ -106,7 +106,7 @@ def test_external_script_decorator(capsys, monkeypatch, ret, expected):
             version_build="2058",
             workflow_name="Google Suggest",
             workflow_version="1.7",
-            workflow_bundle_id=None,
+            workflow_bundleid=None,
             workflow_uid="user.workflow.B0AC54EC-601C-479A-9428-01F9FD732959",
             workflow_cache=PosixPath(
                 "/Users/Crayons/Library/Caches/com.runningwithcrayons.Alfred/Workflow Data/com.alfredapp.googlesuggest"
