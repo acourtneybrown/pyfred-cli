@@ -370,10 +370,11 @@ def package(args: argparse.Namespace):
     Users can import the package by double-clicking the file.
 
     ```
-    usage: pyfred package [-h]
+    usage: pyfred package [-h] --name NAME
 
     options:
-      -h, --help  show this help message and exit
+      -h, --help   show this help message and exit
+      --name NAME  The name of the workflow file
     ```
     """
     root_dir = Path.cwd()
