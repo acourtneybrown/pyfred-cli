@@ -217,9 +217,9 @@ def new(args: argparse.Namespace):
         logging.debug("Copying template")
         env = Environment(loader=PackageLoader("pyfred", "template"))
         logging.debug("Generating templates from %s to %s", env.list_templates(), root_dir)
-        for name in [t for t in env.list_templates() if "__pycache__" not in t]:
-            tmp = env.get_template(name)
-            outfile = root_dir.joinpath(name)
+        for t in [t for t in env.list_templates() if "__pycache__" not in t]:
+            tmp = env.get_template(t)
+            outfile = root_dir.joinpath(t)
             outfile.parent.mkdir(parents=True, exist_ok=True)
             with open(outfile, "w") as fd:
                 fd.write(tmp.render(context))
