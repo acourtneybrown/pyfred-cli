@@ -18,7 +18,7 @@ def _must_be_run_from_workflow_project_root(
     """Validates that the command is run from a directory that contains a workflow"""
 
     def decorator(args: argparse.Namespace):
-        wf_dir = Path.cwd() / "workflow"
+        wf_dir = Path.cwd() / "Workflow"
         info_plist_path = wf_dir / "info.plist"
 
         if not info_plist_path.exists():
