@@ -386,7 +386,7 @@ def package(args: argparse.Namespace):
     output = root_dir / "dist"
     output.mkdir(exist_ok=True)
 
-    _zip_dir(root_dir / "workflow", output / f"{args.name}.alfredworkflow")
+    _zip_dir(root_dir / "Workflow", output / f"{args.name}.alfredworkflow")
 
 
 def _cli():
