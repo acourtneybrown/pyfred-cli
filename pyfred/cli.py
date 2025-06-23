@@ -1,7 +1,6 @@
 import argparse
 import datetime
 import logging
-import os
 import plistlib
 import stat
 import subprocess
@@ -220,7 +219,9 @@ def new(args: argparse.Namespace):
         logging.debug("Generating templates from %s to %s", env.list_templates(), root_dir)
         for name in env.list_templates():
             tmp = env.get_template(name)
-            with open(os.path.join(root_dir, name), "w") as fd:
+            outfile = root_dir.joinpath(name)
+            outfile.mkdir(parents=True, exist_ok=True)
+            with open(outfile, "w") as fd:
                 fd.write(tmp.render(context))
     except OSError as e:
         logging.error("Cannot create workflow: %s", e)
