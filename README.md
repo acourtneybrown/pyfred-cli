@@ -50,7 +50,7 @@ pyfred link
 
 ### Vendor
 
-Downloads the dependencies listed in the `requirements.txt` file and vendors them into the `workflow/vendored`
+Downloads the dependencies listed in the `requirements.txt` file and vendors them into the `Workflow/vendored`
 directory. Doing this avoids having to install them into the system Python interpreter.
 
 ```shell
@@ -100,13 +100,13 @@ workflow runs.
 
 ## IDE setup
 
-If you're using an IDE like PyCharm, you'll want to open the generated directory and set up the `workflow` subdirectory
-as the content root. Additionally, you should add the `workflow/vendored` directory as source directory in the PyCharm
+If you're using an IDE like PyCharm, you'll want to open the generated directory and set up the `Workflow` subdirectory
+as the content root. Additionally, you should add the `Workflow/vendored` directory as source directory in the PyCharm
 project settings. This helps it resolve the imports correctly.
 
 ## Adding icons
 
-You can add an icon for your workflow to the `workflow` directory in the generated skeleton.
+You can add an icon for your workflow to the `Workflow` directory in the generated skeleton.
 The file name must be `icon.png`
 
 You can assign individual icons to your output items. See the `pyalfred.model.Icon` class for more details.
