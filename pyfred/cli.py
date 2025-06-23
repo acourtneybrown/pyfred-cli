@@ -200,7 +200,7 @@ def new(args: argparse.Namespace):
     logging.info("Creating new workflow: %s", name)
 
     root_dir = Path.cwd().joinpath(name)
-    wf_dir = root_dir.joinpath("workflow")
+    wf_dir = root_dir.joinpath("Workflow")
 
     try:
         logging.debug("Copying template")
@@ -338,7 +338,7 @@ def _vendor(root_path: Path, upgrade: bool) -> bool:
     :return: whether the download was successful
     """
 
-    vendored_path = root_path / "workflow" / "vendored"
+    vendored_path = root_path / "Workflow" / "vendored"
     vendored_path.mkdir(parents=True, exist_ok=True)
 
     import subprocess
