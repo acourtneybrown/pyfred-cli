@@ -35,7 +35,7 @@ def test_new(tmpdir):
             "install",
             "-r",
             f"{tmpdir/'test_wf'/'requirements.txt'}",
-            f"--target={tmpdir/'test_wf'/'workflow'/'vendored'}",
+            f"--target={tmpdir/'test_wf'/'Workflow'/'vendored'}",
         ]
     )
 
@@ -46,11 +46,11 @@ def test_new(tmpdir):
                 assert mock_sub.call_count == 2
                 mock_sub.assert_has_calls([expected_git_call, expected_vendor_call])
 
-    assert (tmpdir / "test_wf/workflow/workflow.py").exists()
+    assert (tmpdir / "test_wf/Workflow/workflow.py").exists()
     installed_workflows = list(workflows.iterdir())
     assert len(installed_workflows) == 1
     assert installed_workflows[0].is_symlink()
-    assert installed_workflows[0].readlink() == tmpdir / "test_wf" / "workflow"
+    assert installed_workflows[0].readlink() == tmpdir / "test_wf" / "Workflow"
 
 
 def test_get_workflows_directory():

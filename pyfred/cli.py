@@ -13,13 +13,13 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 
 def _must_be_run_from_workflow_project_root(
-    fn: Callable[[argparse.Namespace], None]
+    fn: Callable[[argparse.Namespace], None],
 ) -> Callable[[argparse.Namespace], None]:
     """Validates that the command is run from a directory that contains a workflow"""
 
     def decorator(args: argparse.Namespace):
         wf_dir = Path.cwd() / "workflow"
-        info_plist_path = wf_dir / "Info.plist"
+        info_plist_path = wf_dir / "info.plist"
 
         if not info_plist_path.exists():
             logging.critical("Cannot find workflow. You need to run this command from the root of the project")
@@ -74,7 +74,7 @@ def _make_plist(
     name: str, keyword: str, bundle_id: str, author: Optional[str], website: Optional[str], description: Optional[str]
 ) -> dict:
     """
-    Create a dictionary representation of the Info.plist file describing the workflow
+    Create a dictionary representation of the info.plist file describing the workflow
 
     :param name:
         The name of the workflow
@@ -88,7 +88,7 @@ def _make_plist(
         The website of the workflow
     :param description:
         The description of the workflow. Will be shown to the user when importing
-    :return: a dictionary representation of the Info.plist file
+    :return: a dictionary representation of the info.plist file
     """
     script_uuid = str(uuid4())
     clipboard_uuid = str(uuid4())
@@ -221,8 +221,8 @@ def new(args: argparse.Namespace):
         if subprocess.call(["git", "init", args.name]) != 0:
             logging.warning("Failed to create git repository. Ignoring.")
 
-    logging.debug("Creating Info.plist")
-    with wf_dir.joinpath("Info.plist").open(mode="wb") as f:
+    logging.debug("Creating info.plist")
+    with wf_dir.joinpath("info.plist").open(mode="wb") as f:
         plistlib.dump(
             _make_plist(
                 name=name,
@@ -362,7 +362,7 @@ def _vendor(root_path: Path, upgrade: bool) -> bool:
 
 
 @_must_be_run_from_workflow_project_root
-def package(_args: argparse.Namespace):
+def package(args: argparse.Namespace):
     """
     Entry point for the `package` command. Creates a package for distribution.
 
@@ -370,10 +370,11 @@ def package(_args: argparse.Namespace):
     Users can import the package by double-clicking the file.
 
     ```
-    usage: pyfred package [-h]
+    usage: pyfred package [-h] --name NAME
 
     options:
-      -h, --help  show this help message and exit
+      -h, --help   show this help message and exit
+      --name NAME  The name of the workflow file
     ```
     """
     root_dir = Path.cwd()
@@ -385,7 +386,7 @@ def package(_args: argparse.Namespace):
     output = root_dir / "dist"
     output.mkdir(exist_ok=True)
 
-    _zip_dir(root_dir / "workflow", output / "workflow.alfredworkflow")
+    _zip_dir(root_dir / "workflow", output / f"{args.name}.alfredworkflow")
 
 
 def _cli():
@@ -455,6 +456,7 @@ def _cli():
     link_parser.set_defaults(func=link)
 
     package_parser = subparsers.add_parser("package", help="Package the workflow for distribution")
+    package_parser.add_argument("--name", type=str, required=True, help="The name of the workflow file")
     package_parser.set_defaults(func=package)
 
     args = parser.parse_args()
