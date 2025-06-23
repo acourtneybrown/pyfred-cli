@@ -1,8 +1,8 @@
 import argparse
+import datetime
 import logging
-import pathlib
+import os
 import plistlib
-import shutil
 import stat
 import subprocess
 import sys
@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Callable, Optional
 from uuid import uuid4
 from zipfile import ZIP_DEFLATED, ZipFile
+
+from jinja2 import Environment, PackageLoader
 
 
 def _must_be_run_from_workflow_project_root(
@@ -71,7 +73,12 @@ def _get_workflows_directory() -> Path:
 
 
 def _make_plist(
-    name: str, keyword: str, bundle_id: str, author: Optional[str], website: Optional[str], description: Optional[str]
+    name: str,
+    keyword: str,
+    bundle_id: str,
+    author: Optional[str],
+    website: Optional[str],
+    description: Optional[str],
 ) -> dict:
     """
     Create a dictionary representation of the info.plist file describing the workflow
@@ -108,7 +115,11 @@ def _make_plist(
         # The contact website
         "webaddress": website or "",
         "objects": [
-            {"uid": clipboard_uuid, "type": "alfred.workflow.output.clipboard", "config": {"clipboardtext": "{query}"}},
+            {
+                "uid": clipboard_uuid,
+                "type": "alfred.workflow.output.clipboard",
+                "config": {"clipboardtext": "{query}"},
+            },
             {
                 "uid": script_uuid,
                 "type": "alfred.workflow.input.scriptfilter",
@@ -202,11 +213,15 @@ def new(args: argparse.Namespace):
     root_dir = Path.cwd().joinpath(name)
     wf_dir = root_dir.joinpath("Workflow")
 
+    context = {"year": datetime.datetime.now().year, **vars(args)}
     try:
         logging.debug("Copying template")
-        template_dir = Path(pathlib.os.path.dirname(__file__)).joinpath("template")  # type: ignore
-        logging.debug("Copying %s to %s", template_dir, root_dir)
-        shutil.copytree(template_dir, root_dir)
+        env = Environment(loader=PackageLoader("pyfred", "template"))
+        logging.debug("Generating templates from %s to %s", env.list_templates(), root_dir)
+        for name in env.list_templates():
+            tmp = env.get_template(name)
+            with open(os.path.join(root_dir, name), "w") as fd:
+                fd.write(tmp.render(context))
     except OSError as e:
         logging.error("Cannot create workflow: %s", e)
         exit(1)
@@ -256,7 +271,11 @@ def link(args: argparse.Namespace):
     ```
     """
     try:
-        _link(relink=args.relink, same_path=args.same_path, wf_dir=Path.cwd().joinpath("workflow"))
+        _link(
+            relink=args.relink,
+            same_path=args.same_path,
+            wf_dir=Path.cwd().joinpath("workflow"),
+        )
     except ValueError as e:
         logging.error("Error creating link: %s", e)
         exit(1)
@@ -413,21 +432,37 @@ def _cli():
     """
     parser = argparse.ArgumentParser(prog="pyfred", description="Build Python workflows for Alfred with ease")
     parser.add_argument(
-        "--debug", action=argparse.BooleanOptionalAction, default=False, help="Whether to enable debug logging"
+        "--debug",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Whether to enable debug logging",
     )
     subparsers = parser.add_subparsers(required=True)
 
     new_parser = subparsers.add_parser("new", help="Create a new workflow")
     new_parser.add_argument("name", type=str, help="Name of the new workflow")
-    new_parser.add_argument("-k", "--keyword", type=str, required=True, help="The keyword to trigger the workflow")
     new_parser.add_argument(
-        "-b", "--bundle-id", type=str, required=True, help="The bundle identifier, usually in reverse DNS notation"
+        "-k",
+        "--keyword",
+        type=str,
+        required=True,
+        help="The keyword to trigger the workflow",
+    )
+    new_parser.add_argument(
+        "-b",
+        "--bundle-id",
+        type=str,
+        required=True,
+        help="The bundle identifier, usually in reverse DNS notation",
     )
     new_parser.add_argument("--author", type=str, help="Name of the author")
     new_parser.add_argument("--website", type=str, help="The workflow website")
     new_parser.add_argument("--description", type=str, help="A description for the workflow")
     new_parser.add_argument(
-        "--git", action=argparse.BooleanOptionalAction, default=True, help="Whether to create a git repository"
+        "--git",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Whether to create a git repository",
     )
     new_parser.set_defaults(func=new)
 
