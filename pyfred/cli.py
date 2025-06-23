@@ -220,7 +220,7 @@ def new(args: argparse.Namespace):
         for name in env.list_templates():
             tmp = env.get_template(name)
             outfile = root_dir.joinpath(name)
-            outfile.mkdir(parents=True, exist_ok=True)
+            outfile.parent.mkdir(parents=True, exist_ok=True)
             with open(outfile, "w") as fd:
                 fd.write(tmp.render(context))
     except OSError as e:
