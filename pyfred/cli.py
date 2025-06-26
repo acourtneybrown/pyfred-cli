@@ -423,7 +423,7 @@ def release(args: argparse.Namespace):
         exit(1)
 
     # push changes & tag
-    push_command = ["git", "push", "origin", "--tags"]
+    push_command = ["git", "push", "origin", "--follow-tags"]
     if subprocess.call(push_command) != 0:
         logging.error("Error pushing changes")
         exit(1)
