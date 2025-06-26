@@ -2,6 +2,7 @@ import argparse
 import datetime
 import logging
 import plistlib
+import re
 import stat
 import subprocess
 import sys
@@ -13,16 +14,35 @@ from zipfile import ZIP_DEFLATED, ZipFile
 from jinja2 import Environment, PackageLoader
 
 
+def _info_plist_path() -> Path:
+    wf_dir = Path.cwd() / "Workflow"
+    info_plist_path = wf_dir / "info.plist"
+    return info_plist_path
+
+
+def _ensure_no_local_changes(
+    fn: Callable[[argparse.Namespace], None],
+) -> Callable[[argparse.Namespace], None]:
+    """Ensure that there are no changes to the local directory"""
+
+    def decorator(args: argparse.Namespace) -> None:
+        git_status_command = ["git", "status", "-s"]
+        if subprocess.check_output(git_status_command).decode("utf-8").strip():
+            logging.critical("Local changes detected. Ensure git history has all changes committed.")
+            exit(1)
+
+        fn(args)
+
+    return decorator
+
+
 def _must_be_run_from_workflow_project_root(
     fn: Callable[[argparse.Namespace], None],
 ) -> Callable[[argparse.Namespace], None]:
     """Validates that the command is run from a directory that contains a workflow"""
 
     def decorator(args: argparse.Namespace):
-        wf_dir = Path.cwd() / "Workflow"
-        info_plist_path = wf_dir / "info.plist"
-
-        if not info_plist_path.exists():
+        if not _info_plist_path().exists():
             logging.critical("Cannot find workflow. You need to run this command from the root of the project")
             exit(1)
 
@@ -238,7 +258,7 @@ def new(args: argparse.Namespace):
             logging.warning("Failed to create git repository. Ignoring.")
 
     logging.debug("Creating info.plist")
-    with wf_dir.joinpath("info.plist").open(mode="wb") as f:
+    with wf_dir.joinpath("info.plist").open(mode="xb") as f:
         plistlib.dump(
             _make_plist(
                 name=name,
@@ -381,6 +401,41 @@ def _vendor(root_path: Path, upgrade: bool) -> bool:
     return subprocess.call(pip_command) == 0
 
 
+@_ensure_no_local_changes
+@_must_be_run_from_workflow_project_root
+def release(args: argparse.Namespace):
+    # Update version number in info.plist
+    plist_path = _info_plist_path()
+    with plist_path.open("rb") as f:
+        pl = plistlib.load(f)
+
+    pl["version"] = args.version
+    with plist_path.open(mode="wb") as f:
+        plistlib.dump(
+            pl,
+            f,
+            sort_keys=True,
+        )
+
+    # commit changes to git
+    commit_command = ["git", "commit", "-a", "-m", f"release {args.version}"]
+    if subprocess.call(commit_command) != 0:
+        logging.error("Error committing changes")
+        exit(1)
+
+    # create annotated tag with version
+    tag_command = ["git", "tag", "-a", args.version, "-m", args.version]
+    if subprocess.call(tag_command) != 0:
+        logging.error("Error tagging changes")
+        exit(1)
+
+    # push changes & tag
+    push_command = ["git", "push", "origin", "--follow-tags"]
+    if subprocess.call(push_command) != 0:
+        logging.error("Error pushing changes")
+        exit(1)
+
+
 @_must_be_run_from_workflow_project_root
 def package(args: argparse.Namespace):
     """
@@ -407,6 +462,22 @@ def package(args: argparse.Namespace):
     output.mkdir(exist_ok=True)
 
     _zip_dir(root_dir / "Workflow", output / f"{args.name}.alfredworkflow")
+
+
+@_must_be_run_from_workflow_project_root
+def version(args: argparse.Namespace) -> None:
+    with _info_plist_path().open("rb") as f:
+        pl = plistlib.load(f)
+
+    print(pl["version"])
+
+
+@_must_be_run_from_workflow_project_root
+def name(args: argparse.Namespace) -> None:
+    with _info_plist_path().open("rb") as f:
+        pl = plistlib.load(f)
+
+    print(pl["name"])
 
 
 def _cli():
@@ -491,9 +562,24 @@ def _cli():
     )
     link_parser.set_defaults(func=link)
 
+    def version_str(arg_value: str, pat=re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+$")) -> str:
+        if not pat.match(arg_value):
+            raise argparse.ArgumentTypeError("invalid version string")
+        return arg_value
+
+    release_parser = subparsers.add_parser("release", help="Update version & tag for release build")
+    release_parser.add_argument("--version", type=version_str, required=True, help="Version to update")
+    release_parser.set_defaults(func=release)
+
     package_parser = subparsers.add_parser("package", help="Package the workflow for distribution")
     package_parser.add_argument("--name", type=str, required=True, help="The name of the workflow file")
     package_parser.set_defaults(func=package)
+
+    version_parser = subparsers.add_parser("version", help="Display the version of the workflow")
+    version_parser.set_defaults(func=version)
+
+    name_parser = subparsers.add_parser("name", help="Display the name of the workflow")
+    name_parser.set_defaults(func=name)
 
     args = parser.parse_args()
 
