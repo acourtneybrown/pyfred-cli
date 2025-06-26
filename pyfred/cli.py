@@ -1,9 +1,8 @@
 import argparse
+import datetime
 import logging
-import pathlib
 import plistlib
 import re
-import shutil
 import stat
 import subprocess
 import sys
@@ -11,6 +10,8 @@ from pathlib import Path
 from typing import Callable, Optional
 from uuid import uuid4
 from zipfile import ZIP_DEFLATED, ZipFile
+
+from jinja2 import Environment, PackageLoader
 
 
 def _info_plist_path() -> Path:
@@ -129,7 +130,7 @@ def _make_plist(
         # Add the vendored directory to the PYTHONPATH so that we're also searching there for dependencies
         "variables": {"PYTHONPATH": ".:vendored"},
         # The workflow version
-        "version": "0.0.1",
+        "version": "0.0.0",
         # The contact website
         "webaddress": website or "",
         "objects": [
@@ -207,7 +208,9 @@ def new(args: argparse.Namespace):
     workflow shows in the Alfred Preferences app and can still be easily edited with an external editor.
 
     ```
-    usage: pyfred new [-h] -k KEYWORD -b BUNDLE_ID [--author AUTHOR] [--website WEBSITE] [--description DESCRIPTION] [--git | --no-git] name
+    usage: pyfred new [-h] -k KEYWORD -b BUNDLE_ID --author AUTHOR [--website WEBSITE] [--description DESCRIPTION]
+                  [--git | --no-git]
+                  name
 
     positional arguments:
       name                  Name of the new workflow
@@ -222,7 +225,7 @@ def new(args: argparse.Namespace):
       --website WEBSITE     The workflow website
       --description DESCRIPTION
                             A description for the workflow
-      --git, --no-git       Whether to create a git repository (default: True)
+      --git, --no-git       Whether to create a git repository
     ```
     """  # noqa: E501
     name = args.name
@@ -231,11 +234,25 @@ def new(args: argparse.Namespace):
     root_dir = Path.cwd().joinpath(name)
     wf_dir = root_dir.joinpath("Workflow")
 
+    context = {
+        "year": datetime.datetime.now().year,
+        "system_python_version": subprocess.check_output(
+            ["/usr/bin/python3", "-c", "print(__import__('platform').python_version())"]
+        )
+        .decode("utf-8")
+        .strip(),
+        **vars(args),
+    }
     try:
         logging.debug("Copying template")
-        template_dir = Path(pathlib.os.path.dirname(__file__)).joinpath("template")  # type: ignore
-        logging.debug("Copying %s to %s", template_dir, root_dir)
-        shutil.copytree(template_dir, root_dir)
+        env = Environment(loader=PackageLoader("pyfred", "template"))
+        logging.debug("Generating templates from %s to %s", env.list_templates(), root_dir)
+        for t in [t for t in env.list_templates() if "__pycache__" not in t]:
+            tmp = env.get_template(t)
+            outfile = root_dir.joinpath(t)
+            outfile.parent.mkdir(parents=True, exist_ok=True)
+            with open(outfile, "w") as fd:
+                fd.write(tmp.render(context))
     except OSError as e:
         logging.error("Cannot create workflow: %s", e)
         exit(1)
@@ -520,7 +537,7 @@ def _cli():
         required=True,
         help="The bundle identifier, usually in reverse DNS notation",
     )
-    new_parser.add_argument("--author", type=str, help="Name of the author")
+    new_parser.add_argument("--author", type=str, required=True, help="Name of the author")
     new_parser.add_argument("--website", type=str, help="The workflow website")
     new_parser.add_argument("--description", type=str, help="A description for the workflow")
     new_parser.add_argument(
