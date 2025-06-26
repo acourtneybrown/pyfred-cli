@@ -413,6 +413,14 @@ def version(args: argparse.Namespace) -> None:
     print(pl["version"])
 
 
+@_must_be_run_from_workflow_project_root
+def name(args: argparse.Namespace) -> None:
+    with _info_plist_path().open("rb") as f:
+        pl = plistlib.load(f)
+
+    print(pl["name"])
+
+
 def _cli():
     """
     The entry point for the CLI.
@@ -501,6 +509,9 @@ def _cli():
 
     version_parser = subparsers.add_parser("version", help="Display the version of the workflow")
     version_parser.set_defaults(func=version)
+
+    name_parser = subparsers.add_parser("name", help="Display the name of the workflow")
+    name_parser.set_defaults(func=name)
 
     args = parser.parse_args()
 
