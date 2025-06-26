@@ -110,7 +110,7 @@ def _make_plist(
         # Add the vendored directory to the PYTHONPATH so that we're also searching there for dependencies
         "variables": {"PYTHONPATH": ".:vendored"},
         # The workflow version
-        "version": "0.0.1",
+        "version": "0.0.0",
         # The contact website
         "webaddress": website or "",
         "objects": [
