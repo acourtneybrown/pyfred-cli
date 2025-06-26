@@ -251,7 +251,7 @@ def new(args: argparse.Namespace):
             logging.warning("Failed to create git repository. Ignoring.")
 
     logging.debug("Creating info.plist")
-    with _info_plist_path().open(mode="wb") as f:
+    with wf_dir.joinpath("info.plist").open(mode="xb") as f:
         plistlib.dump(
             _make_plist(
                 name=name,
