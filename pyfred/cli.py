@@ -208,7 +208,9 @@ def new(args: argparse.Namespace):
     workflow shows in the Alfred Preferences app and can still be easily edited with an external editor.
 
     ```
-    usage: pyfred new [-h] -k KEYWORD -b BUNDLE_ID [--author AUTHOR] [--website WEBSITE] [--description DESCRIPTION] [--git | --no-git] name
+    usage: pyfred new [-h] -k KEYWORD -b BUNDLE_ID --author AUTHOR [--website WEBSITE] [--description DESCRIPTION]
+                  [--git | --no-git]
+                  name
 
     positional arguments:
       name                  Name of the new workflow
@@ -223,7 +225,7 @@ def new(args: argparse.Namespace):
       --website WEBSITE     The workflow website
       --description DESCRIPTION
                             A description for the workflow
-      --git, --no-git       Whether to create a git repository (default: True)
+      --git, --no-git       Whether to create a git repository
     ```
     """  # noqa: E501
     name = args.name
@@ -531,7 +533,7 @@ def _cli():
         required=True,
         help="The bundle identifier, usually in reverse DNS notation",
     )
-    new_parser.add_argument("--author", type=str, help="Name of the author")
+    new_parser.add_argument("--author", type=str, required=True, help="Name of the author")
     new_parser.add_argument("--website", type=str, help="The workflow website")
     new_parser.add_argument("--description", type=str, help="A description for the workflow")
     new_parser.add_argument(
