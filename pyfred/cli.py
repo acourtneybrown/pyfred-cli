@@ -232,7 +232,11 @@ def new(args: argparse.Namespace):
     root_dir = Path.cwd().joinpath(name)
     wf_dir = root_dir.joinpath("Workflow")
 
-    context = {"year": datetime.datetime.now().year, **vars(args)}
+    context = {
+        "year": datetime.datetime.now().year,
+        "system_python_version": subprocess.check_output("/usr/bin/python3 --version"),
+        **vars(args),
+    }
     try:
         logging.debug("Copying template")
         env = Environment(loader=PackageLoader("pyfred", "template"))
