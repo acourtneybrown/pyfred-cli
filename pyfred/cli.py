@@ -236,7 +236,11 @@ def new(args: argparse.Namespace):
 
     context = {
         "year": datetime.datetime.now().year,
-        "system_python_version": subprocess.check_output("/usr/bin/python3 --version"),
+        "system_python_version": subprocess.check_output(
+            ["/usr/bin/python3", "-c", "print(__import__('platform').python_version())"]
+        )
+        .decode("utf-8")
+        .strip(),
         **vars(args),
     }
     try:
