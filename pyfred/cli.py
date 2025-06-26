@@ -12,16 +12,19 @@ from uuid import uuid4
 from zipfile import ZIP_DEFLATED, ZipFile
 
 
+def _info_plist_path() -> Path:
+    wf_dir = Path.cwd() / "Workflow"
+    info_plist_path = wf_dir / "info.plist"
+    return info_plist_path
+
+
 def _must_be_run_from_workflow_project_root(
     fn: Callable[[argparse.Namespace], None],
 ) -> Callable[[argparse.Namespace], None]:
     """Validates that the command is run from a directory that contains a workflow"""
 
     def decorator(args: argparse.Namespace):
-        wf_dir = Path.cwd() / "Workflow"
-        info_plist_path = wf_dir / "info.plist"
-
-        if not info_plist_path.exists():
+        if not _info_plist_path().exists():
             logging.critical("Cannot find workflow. You need to run this command from the root of the project")
             exit(1)
 
@@ -71,7 +74,12 @@ def _get_workflows_directory() -> Path:
 
 
 def _make_plist(
-    name: str, keyword: str, bundle_id: str, author: Optional[str], website: Optional[str], description: Optional[str]
+    name: str,
+    keyword: str,
+    bundle_id: str,
+    author: Optional[str],
+    website: Optional[str],
+    description: Optional[str],
 ) -> dict:
     """
     Create a dictionary representation of the info.plist file describing the workflow
@@ -108,7 +116,11 @@ def _make_plist(
         # The contact website
         "webaddress": website or "",
         "objects": [
-            {"uid": clipboard_uuid, "type": "alfred.workflow.output.clipboard", "config": {"clipboardtext": "{query}"}},
+            {
+                "uid": clipboard_uuid,
+                "type": "alfred.workflow.output.clipboard",
+                "config": {"clipboardtext": "{query}"},
+            },
             {
                 "uid": script_uuid,
                 "type": "alfred.workflow.input.scriptfilter",
@@ -256,7 +268,11 @@ def link(args: argparse.Namespace):
     ```
     """
     try:
-        _link(relink=args.relink, same_path=args.same_path, wf_dir=Path.cwd().joinpath("workflow"))
+        _link(
+            relink=args.relink,
+            same_path=args.same_path,
+            wf_dir=Path.cwd().joinpath("workflow"),
+        )
     except ValueError as e:
         logging.error("Error creating link: %s", e)
         exit(1)
@@ -389,6 +405,14 @@ def package(args: argparse.Namespace):
     _zip_dir(root_dir / "Workflow", output / f"{args.name}.alfredworkflow")
 
 
+@_must_be_run_from_workflow_project_root
+def version(args: argparse.Namespace) -> None:
+    with _info_plist_path().open("rb") as f:
+        pl = plistlib.load(f)
+
+    print(pl["version"])
+
+
 def _cli():
     """
     The entry point for the CLI.
@@ -413,21 +437,37 @@ def _cli():
     """
     parser = argparse.ArgumentParser(prog="pyfred", description="Build Python workflows for Alfred with ease")
     parser.add_argument(
-        "--debug", action=argparse.BooleanOptionalAction, default=False, help="Whether to enable debug logging"
+        "--debug",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Whether to enable debug logging",
     )
     subparsers = parser.add_subparsers(required=True)
 
     new_parser = subparsers.add_parser("new", help="Create a new workflow")
     new_parser.add_argument("name", type=str, help="Name of the new workflow")
-    new_parser.add_argument("-k", "--keyword", type=str, required=True, help="The keyword to trigger the workflow")
     new_parser.add_argument(
-        "-b", "--bundle-id", type=str, required=True, help="The bundle identifier, usually in reverse DNS notation"
+        "-k",
+        "--keyword",
+        type=str,
+        required=True,
+        help="The keyword to trigger the workflow",
+    )
+    new_parser.add_argument(
+        "-b",
+        "--bundle-id",
+        type=str,
+        required=True,
+        help="The bundle identifier, usually in reverse DNS notation",
     )
     new_parser.add_argument("--author", type=str, help="Name of the author")
     new_parser.add_argument("--website", type=str, help="The workflow website")
     new_parser.add_argument("--description", type=str, help="A description for the workflow")
     new_parser.add_argument(
-        "--git", action=argparse.BooleanOptionalAction, default=True, help="Whether to create a git repository"
+        "--git",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Whether to create a git repository",
     )
     new_parser.set_defaults(func=new)
 
@@ -458,6 +498,9 @@ def _cli():
     package_parser = subparsers.add_parser("package", help="Package the workflow for distribution")
     package_parser.add_argument("--name", type=str, required=True, help="The name of the workflow file")
     package_parser.set_defaults(func=package)
+
+    version_parser = subparsers.add_parser("version", help="Display the version of the workflow")
+    version_parser.set_defaults(func=version)
 
     args = parser.parse_args()
 
