@@ -11,19 +11,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
+
     - name: Set up Python {{ system_python_version }}
       uses: actions/setup-python@v4
       with:
         python-version: "{{ system_python_version }}"
         cache: pip
+
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
+
     - name: Package
       run: |
         pyfred package
-    - name: Create GitHub release
+
+    - name: Build Changelog
+      id: github_release
+      uses: mikepenz/release-changelog-builder-action@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create Gitea release
       uses: softprops/action-gh-release@v1
       with:
         files: dist/*.alfredworkflow
+        body: ${{steps.github_release.outputs.changelog}}
