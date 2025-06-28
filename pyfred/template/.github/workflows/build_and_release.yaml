@@ -31,10 +31,10 @@ jobs:
       id: github_release
       uses: mikepenz/release-changelog-builder-action@v5
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ '{{ secrets.GITHUB_TOKEN }}' }}
 
     - name: Create Gitea release
       uses: softprops/action-gh-release@v1
       with:
         files: dist/*.alfredworkflow
-        body: ${{steps.github_release.outputs.changelog}}
+        body: ${{ '{{ steps.github_release.outputs.changelog }}' }}
