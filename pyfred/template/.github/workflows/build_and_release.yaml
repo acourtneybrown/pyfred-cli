@@ -19,9 +19,9 @@ jobs:
         python-version: "{{ system_python_version }}"
         cache: pip
 
-    - name: Install dependencies
+    - name: Install pyfred
       run: |
-        pip install -r requirements.txt
+        pip install git+https://github.com/acourtneybrown/pyfred-cli@main
 
     - name: Package
       run: |
