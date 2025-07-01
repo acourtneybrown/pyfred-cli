@@ -208,9 +208,11 @@ def new(args: argparse.Namespace):
     workflow shows in the Alfred Preferences app and can still be easily edited with an external editor.
 
     ```
-    usage: pyfred new [-h] -k KEYWORD -b BUNDLE_ID --author AUTHOR [--website WEBSITE] [--description DESCRIPTION]
-                  [--git | --no-git]
-                  name
+    usage: pyfred new [-h] -k KEYWORD -b BUNDLE_ID --author AUTHOR
+                      [--website WEBSITE] [--description DESCRIPTION]
+                      [--git | --no-git] [--link | --no-link]
+                      [--vendor | --no-vendor]
+                      name
 
     positional arguments:
       name                  Name of the new workflow
@@ -226,6 +228,9 @@ def new(args: argparse.Namespace):
       --description DESCRIPTION
                             A description for the workflow
       --git, --no-git       Whether to create a git repository
+      --link, --no-link     Create a symbolic link to this workflow
+      --vendor, --no-vendor
+                            Install workflow dependencies
     ```
     """  # noqa: E501
     name = args.name
@@ -264,7 +269,7 @@ def new(args: argparse.Namespace):
 
     if args.git:
         logging.debug("Initialising git repository")
-        if subprocess.call(["git", "init", args.name]) != 0:
+        if subprocess.call(["git", "init", name]) != 0:
             logging.warning("Failed to create git repository. Ignoring.")
 
     logging.debug("Creating info.plist")
@@ -281,8 +286,10 @@ def new(args: argparse.Namespace):
             f,
             sort_keys=True,
         )
-    _vendor(root_dir, upgrade=False)
-    _link(relink=True, same_path=False, wf_dir=wf_dir)
+    if args.vendor:
+        _vendor(root_dir, upgrade=False)
+    if args.link:
+        _link(relink=True, same_path=False, wf_dir=wf_dir)
 
 
 @_must_be_run_from_workflow_project_root
@@ -547,6 +554,12 @@ def _cli():
         action=argparse.BooleanOptionalAction,
         default=True,
         help="Whether to create a git repository",
+    )
+    new_parser.add_argument(
+        "--link", action=argparse.BooleanOptionalAction, default=True, help="Create a symbolic link to this workflow"
+    )
+    new_parser.add_argument(
+        "--vendor", action=argparse.BooleanOptionalAction, default=True, help="Install workflow dependencies"
     )
     new_parser.set_defaults(func=new)
 
