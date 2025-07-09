@@ -500,21 +500,46 @@ def name(args: argparse.Namespace) -> None:
     print(pl["name"])
 
 
+@_must_be_run_from_workflow_project_root
+def show_link(args: argparse.Namespace) -> None:
+    """
+    Entry point for the `show-link` command. Displays the link in the installed workflows directory for this project.
+
+    ```
+    usage: pyfred show-link [-h]
+
+    options:
+      -h, --help  show this help message and exit
+    ```
+    """
+    wf_dir = Path.cwd().joinpath("Workflow")
+    link_path = find_workflow_link(wf_dir)
+
+    if link_path:
+        print(link_path)
+    else:
+        logging.error("No workflow link found. Use 'pyfred link' to create one.")
+        sys.exit(1)
+
+
 def _cli():
     """
     The entry point for the CLI.
 
     ```
-    usage: pyfred [-h] {new,vendor,link,package} ...
+    usage: pyfred [-h] {new,vendor,link,package,version,name,show-link} ...
 
     Build Python workflows for Alfred with ease
 
     positional arguments:
-      {new,vendor,link,package}
+      {new,vendor,link,package,version,name,show-link}
         new                 Create a new workflow
         vendor              Install workflow dependencies
         link                Create a symbolic link to this workflow in Alfred
         package             Package the workflow for distribution
+        version             Display the version of the workflow
+        name                Display the name of the workflow
+        show-link           Display the link in the installed workflows directory for this project
 
     options:
       -h, --help            show this help message and exit
@@ -606,6 +631,11 @@ def _cli():
 
     name_parser = subparsers.add_parser("name", help="Display the name of the workflow")
     name_parser.set_defaults(func=name)
+
+    show_link_parser = subparsers.add_parser(
+        "show-link", help="Display the link in the installed workflows directory for this project"
+    )
+    show_link_parser.set_defaults(func=show_link)
 
     args = parser.parse_args()
 

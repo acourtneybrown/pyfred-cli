@@ -6,7 +6,14 @@ from unittest.mock import MagicMock, call, patch
 
 import pytest
 
-from pyfred.cli import _get_workflows_directory, link, new, package, vendor
+from pyfred.cli import (
+    _get_workflows_directory,
+    link,
+    new,
+    package,
+    show_link,
+    vendor,
+)
 from pyfred.model import Data, Icon, Key, OutputItem, ScriptFilterOutput, Text, Type
 
 
@@ -92,9 +99,42 @@ def test_full_model_serialises_to_json():
     assert json.dumps(output, default=vars)
 
 
+def test_show_link_with_link(tmpdir):
+    tmpdir = Path(tmpdir)
+    wf_dir = tmpdir / "Workflow"
+    wf_dir.mkdir(parents=True)
+    link_path = Path("/path/to/workflow/link")
+
+    with patch("pathlib.Path.cwd", return_value=tmpdir):
+        with patch("pyfred.cli._info_plist_path") as mock_info_plist_path:
+            mock_info_plist_path.return_value.exists.return_value = True
+            with patch("pyfred.cli.find_workflow_link", return_value=link_path) as mock_find:
+                with patch("builtins.print") as mock_print:
+                    show_link(MagicMock(spec=argparse.Namespace))
+                    mock_find.assert_called_once_with(wf_dir)
+                    mock_print.assert_called_once_with(link_path)
+
+
+def test_show_link_without_link(tmpdir):
+    tmpdir = Path(tmpdir)
+    wf_dir = tmpdir / "Workflow"
+    wf_dir.mkdir(parents=True)
+
+    with patch("pathlib.Path.cwd", return_value=tmpdir):
+        with patch("pyfred.cli._info_plist_path") as mock_info_plist_path:
+            mock_info_plist_path.return_value.exists.return_value = True
+            with patch("pyfred.cli.find_workflow_link", return_value=None) as mock_find:
+                with patch("logging.error") as mock_error:
+                    with pytest.raises(SystemExit) as excinfo:
+                        show_link(MagicMock(spec=argparse.Namespace))
+                    assert excinfo.value.code == 1
+                    mock_find.assert_called_once_with(wf_dir)
+                    mock_error.assert_called_once_with("No workflow link found. Use 'pyfred link' to create one.")
+
+
 def test_exits_if_not_in_workflow_dir(tmpdir):
     with patch("pathlib.Path.cwd", return_value=tmpdir):
-        for func in (link, package, vendor):
+        for func in (link, package, vendor, show_link):
             with pytest.raises(SystemExit) as excinfo:
                 func(MagicMock(spec=argparse.Namespace))
             assert excinfo.value.code == 1
