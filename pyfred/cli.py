@@ -471,8 +471,9 @@ def package(args: argparse.Namespace):
     """
     root_dir = Path.cwd()
 
-    logging.debug("requirements.txt exists %s", root_dir.joinpath("requirements.txt").exists())
-    if root_dir.joinpath("requirements.txt").exists():
+    has_requirements = root_dir.joinpath("requirements.txt").exists()
+    logging.debug("requirements.txt exists %s", has_requirements)
+    if has_requirements:
         if not _vendor(root_dir, upgrade=True):
             logging.error("Failed to download dependencies. Exiting")
             exit(1)
