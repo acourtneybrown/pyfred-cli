@@ -312,7 +312,7 @@ def link(args: argparse.Namespace):
         _link(
             relink=args.relink,
             same_path=args.same_path,
-            wf_dir=Path.cwd().joinpath("workflow"),
+            wf_dir=Path.cwd().joinpath("Workflow"),
         )
     except ValueError as e:
         logging.error("Error creating link: %s", e)
