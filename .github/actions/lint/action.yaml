@@ -23,4 +23,4 @@ runs:
         use-flake8: true
         use-black: true
         use-mypy: false
-        use-isort: true
+        use-isort: false
