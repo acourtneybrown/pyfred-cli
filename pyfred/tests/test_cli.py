@@ -112,7 +112,7 @@ def test_show_link_with_link(tmpdir):
                 with patch("builtins.print") as mock_print:
                     show_link(MagicMock(spec=argparse.Namespace))
                     mock_find.assert_called_once_with(wf_dir)
-                    mock_print.assert_called_once_with(f"Workflow link: {link_path}")
+                    mock_print.assert_called_once_with(link_path)
 
 
 def test_show_link_without_link(tmpdir):
@@ -124,10 +124,12 @@ def test_show_link_without_link(tmpdir):
         with patch("pyfred.cli._info_plist_path") as mock_info_plist_path:
             mock_info_plist_path.return_value.exists.return_value = True
             with patch("pyfred.cli.find_workflow_link", return_value=None) as mock_find:
-                with patch("builtins.print") as mock_print:
-                    show_link(MagicMock(spec=argparse.Namespace))
+                with patch("logging.error") as mock_error:
+                    with pytest.raises(SystemExit) as excinfo:
+                        show_link(MagicMock(spec=argparse.Namespace))
+                    assert excinfo.value.code == 1
                     mock_find.assert_called_once_with(wf_dir)
-                    mock_print.assert_called_once_with("No workflow link found. Use 'pyfred link' to create one.")
+                    mock_error.assert_called_once_with("No workflow link found. Use 'pyfred link' to create one.")
 
 
 def test_exits_if_not_in_workflow_dir(tmpdir):

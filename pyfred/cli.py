@@ -516,9 +516,10 @@ def show_link(args: argparse.Namespace) -> None:
     link_path = find_workflow_link(wf_dir)
 
     if link_path:
-        print(f"Workflow link: {link_path}")
+        print(link_path)
     else:
-        print("No workflow link found. Use 'pyfred link' to create one.")
+        logging.error("No workflow link found. Use 'pyfred link' to create one.")
+        sys.exit(1)
 
 
 def _cli():
